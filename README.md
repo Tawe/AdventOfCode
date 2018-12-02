@@ -1,2 +1,1 @@
-🎄💻
-Answers for www.adventofcode.com challenges.
+☃️ Answers for www.adventofcode.com challenges. 🎄
