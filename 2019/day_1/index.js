@@ -8,7 +8,7 @@ const fuelArr = arr => arr.map(num => value(num));
 const sumVals = (arr) => arr.reduce((acc, cur)=>acc+cur)
 
 //Part One
-console.log(sumVals(fuelArr(numbers))) //3282935
+console.log(`Part One: The sum of the fuel requirements is ${sumVals(fuelArr(numbers))}`) //3282935
 
 const totalFuel = fuelArr(numbers).map(fuel =>{
     let total = fuel;
@@ -21,4 +21,4 @@ const totalFuel = fuelArr(numbers).map(fuel =>{
 
 
 //Part Two
-console.log(sumVals(totalFuel));
+console.log(`Part Two: The sum of the fuel requirements per modules is ${sumVals(totalFuel)}`);
