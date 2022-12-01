@@ -6,4 +6,4 @@ const sumCalArr = caloriesArr.map(cal=>cal.reduce((a, b) => a + b, 0)).sort((a,b
 
 
 console.log(`How many total Calories is that Elf carrying? ${sumCalArr[0]}`)
-console.log(`How many Calories are those the top three elves carrying in total? ${sumCalArr[0]+sumCalArr[1]+sumCalArr[2]}`);
+console.log(`How many Calories are the top three elves carrying in total? ${sumCalArr[0]+sumCalArr[1]+sumCalArr[2]}`);
