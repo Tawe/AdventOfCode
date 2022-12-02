@@ -47,7 +47,7 @@ const compare = ([opponent, us]) => {
     if ((picksMap[opponent]  === picks.rock && picksMap[us] === picks.paper) || (picksMap[opponent]  === picks.paper && picksMap[us] === picks.scissors) || (picksMap[opponent]  === picks.scissors && picksMap[us] === picks.rock)) {
         return picksMap[us] + outcomes.win;
     }
-    return picksMap[us];
+        return picksMap[us];
 }
 
 const partOne = () => strategyGuide.map(rounds=>compare([...rounds])).reduce((a, b) => a + b, 0)
