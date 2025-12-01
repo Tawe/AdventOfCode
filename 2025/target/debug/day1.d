@@ -1,0 +1,1 @@
+/Users/johnmunn/Documents/projects/AdventOfCode/2025/target/debug/day1: /Users/johnmunn/Documents/projects/AdventOfCode/2025/day_1/input.txt /Users/johnmunn/Documents/projects/AdventOfCode/2025/day_1/main.rs
