@@ -7,4 +7,8 @@ edition = "2024"
 name = "day1"
 path = "Day_1/main.rs"
 
+[[bin]]
+name = "day2"
+path = "Day_2/main.rs"
+
 [dependencies]
