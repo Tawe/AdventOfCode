@@ -19,27 +19,19 @@ fn main() {
     println!("Part Two: {part_two_result}");
 }
 
-fn count_adjacent(grid: &Vec<Vec<char>>, row: usize, col: usize) -> bool {
+fn has_fewer_than_four_adjacent(grid: &Vec<Vec<char>>, row: usize, col: usize) -> bool {
     let mut adjacent_count = 0;
-    for i in -1..=1 {
-        for j in -1..=1 {
-            if i == 0 && j == 0 {
-                continue;
-            }
-            let new_row = row as i64 + i;
-            let new_col = col as i64 + j;
-            if new_row < 0 || new_row >= grid.len() as i64 || new_col < 0 || new_col >= grid[row].len() as i64 {
-                continue;
-            }
-            if grid[new_row as usize][new_col as usize] == '@' {
-                adjacent_count += 1;
-            }
+    for (dr, dc) in NEIGHBORS.iter() {
+        let new_row = row as i32 + dr;
+        let new_col = col as i32 + dc;
+        if new_row < 0 || new_row >= grid.len() as i32 || new_col < 0 || new_col >= grid[row].len() as i32 {
+            continue;
+        }
+        if grid[new_row as usize][new_col as usize] == '@' {
+            adjacent_count += 1;
         }
     }
-    if adjacent_count >= 4 {
-        return false;
-    }
-    true
+    adjacent_count < 4
 }
 
 fn part_one(grid: &Vec<Vec<char>>) -> i64 {
@@ -47,7 +39,7 @@ fn part_one(grid: &Vec<Vec<char>>) -> i64 {
     for row in 0..grid.len() {
         for col in 0..grid[row].len() {
             if grid[row][col] == '@' {
-                if count_adjacent(grid, row, col) {
+                if has_fewer_than_four_adjacent(grid, row, col) {
                     count += 1;
                 }
             }
@@ -55,7 +47,6 @@ fn part_one(grid: &Vec<Vec<char>>) -> i64 {
     }
     count
 }
-
 
 fn part_two(grid: &Vec<Vec<char>>) -> i64 {
     let rows = grid.len();
