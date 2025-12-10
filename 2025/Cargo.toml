@@ -35,5 +35,9 @@ path = "Day_7/main.rs"
 name = "day8"
 path = "Day_8/main.rs"
 
+[[bin]]
+name = "day9"
+path = "Day_9/main.rs"
+
 
 [dependencies]
