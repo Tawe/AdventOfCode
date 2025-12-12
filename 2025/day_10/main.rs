@@ -15,9 +15,9 @@ fn main() {
 
 #[derive(Debug)]
 struct Machine {
-    pattern: Vec<bool>,        // indicator lights pattern for part 1
-    buttons: Vec<Vec<usize>>,  // button -> list of indices it affects
-    target: Vec<i64>,          // joltage targets for part 2
+    pattern: Vec<bool>,
+    buttons: Vec<Vec<usize>>,
+    target: Vec<i64>,
 }
 
 fn parse_machine(line: &str) -> Machine {
@@ -30,16 +30,14 @@ fn parse_machine(line: &str) -> Machine {
         };
     }
 
-    // [pattern]
     let lb = s.find('[').expect("no [");
     let rb = s[lb + 1..].find(']').expect("no ]") + lb + 1;
     let pattern_str = &s[lb + 1..rb];
     let pattern: Vec<bool> = pattern_str.chars().map(|c| c == '#').collect();
 
-    // everything after ]
+
     let mut rest = &s[rb + 1..];
 
-    // parse all ( ... ) as button specs
     let mut buttons: Vec<Vec<usize>> = Vec::new();
     loop {
         if let Some(start) = rest.find('(') {
@@ -66,7 +64,6 @@ fn parse_machine(line: &str) -> Machine {
         break;
     }
 
-    // parse { ... } as joltage target
     let mut target: Vec<i64> = Vec::new();
     if let Some(lb2) = s.find('{') {
         if let Some(rb2) = s[lb2 + 1..].find('}') {
@@ -101,8 +98,6 @@ fn parse_input(input: &str) -> Vec<Machine> {
         .collect()
 }
 
-/* -------------------- PART 1: lights (GF(2)) -------------------- */
-
 fn solve_machine_part1(pattern: &[bool], buttons: &[Vec<usize>]) -> i64 {
     let n = pattern.len();
     let m = buttons.len();
@@ -118,14 +113,10 @@ fn solve_machine_part1(pattern: &[bool], buttons: &[Vec<usize>]) -> i64 {
         }
     }
 
-    // Convert target pattern to 0/1
     let target: Vec<u8> = pattern.iter().map(|&b| if b { 1 } else { 0 }).collect();
 
-    // Build augmented matrix: n rows, m button columns + 1 RHS column
-    // mat[row][0..m-1] = button toggles, mat[row][m] = target bit
     let mut mat = vec![vec![0u8; m + 1]; n];
 
-    // Button columns
     for (j, inds) in buttons.iter().enumerate() {
         for &i_light in inds {
             if i_light >= n {
@@ -134,18 +125,15 @@ fn solve_machine_part1(pattern: &[bool], buttons: &[Vec<usize>]) -> i64 {
             mat[i_light][j] ^= 1;
         }
     }
-    // RHS
     for i in 0..n {
         mat[i][m] = target[i];
     }
 
-    // Gaussian elimination over GF(2) to row echelon form
     let mut row = 0usize;
     let nrows = n;
     let mut pivot_cols: Vec<usize> = Vec::new();
 
     for col in 0..m {
-        // Find pivot row with a 1 in this column at or below current row
         let mut pivot_row = None;
         for r in row..nrows {
             if mat[r][col] == 1 {
@@ -154,14 +142,12 @@ fn solve_machine_part1(pattern: &[bool], buttons: &[Vec<usize>]) -> i64 {
             }
         }
         let Some(pivot_r) = pivot_row else {
-            continue; // no pivot in this column
+            continue;
         };
-
-        // Swap into position
+        
         mat.swap(row, pivot_r);
         pivot_cols.push(col);
 
-        // Eliminate below
         for r in (row + 1)..nrows {
             if mat[r][col] == 1 {
                 for c in col..=m {
@@ -178,7 +164,6 @@ fn solve_machine_part1(pattern: &[bool], buttons: &[Vec<usize>]) -> i64 {
 
     let rank = pivot_cols.len();
 
-    // Check for inconsistency: row of all zeros in A but 1 in RHS
     for r in rank..nrows {
         let all_zero = (0..m).all(|c| mat[r][c] == 0);
         if all_zero && mat[r][m] == 1 {
@@ -186,7 +171,6 @@ fn solve_machine_part1(pattern: &[bool], buttons: &[Vec<usize>]) -> i64 {
         }
     }
 
-    // Reduce to RREF (clear above pivots)
     for i in (0..rank).rev() {
         let col = pivot_cols[i];
         for r in 0..i {
@@ -198,7 +182,6 @@ fn solve_machine_part1(pattern: &[bool], buttons: &[Vec<usize>]) -> i64 {
         }
     }
 
-    // Identify free variable columns
     let mut is_pivot = vec![false; m];
     for &c in &pivot_cols {
         is_pivot[c] = true;
@@ -206,9 +189,7 @@ fn solve_machine_part1(pattern: &[bool], buttons: &[Vec<usize>]) -> i64 {
     let free_cols: Vec<usize> = (0..m).filter(|&c| !is_pivot[c]).collect();
     let k = free_cols.len();
 
-    // Enumerate all assignments of free vars and pick minimum Hamming weight solution
     if k > 25 {
-        // Very defensive; AoC-style inputs are usually smaller.
         panic!("Too many free variables ({}); consider optimizing", k);
     }
 
@@ -218,17 +199,14 @@ fn solve_machine_part1(pattern: &[bool], buttons: &[Vec<usize>]) -> i64 {
     for mask in 0..total_free_masks {
         let mut x = vec![0u8; m];
 
-        // Assign free variables from mask
         for (bit_idx, &col) in free_cols.iter().enumerate() {
             if (mask >> bit_idx) & 1 == 1 {
                 x[col] = 1;
             }
         }
 
-        // Determine pivot variables using the RREF rows
         for (row_idx, &pivot_col) in pivot_cols.iter().enumerate() {
             let mut val = mat[row_idx][m]; // RHS
-            // subtract (XOR) contributions from free variables in this row
             for &free_col in &free_cols {
                 if mat[row_idx][free_col] == 1 && x[free_col] == 1 {
                     val ^= 1;
@@ -254,8 +232,6 @@ fn part_one(input: &str) -> i64 {
         .sum()
 }
 
-/* -------------------- PART 2: joltages (ILP) -------------------- */
-
 fn min_presses_jolts(machine: &Machine) -> i64 {
     let num_buttons = machine.buttons.len();
     let num_counters = machine.target.len();
@@ -264,7 +240,6 @@ fn min_presses_jolts(machine: &Machine) -> i64 {
         return 0;
     }
 
-    // quick sanity: every counter with target > 0 must be affected by some button
     for (i, &t) in machine.target.iter().enumerate() {
         if t > 0 && !machine.buttons.iter().any(|b| b.contains(&i)) {
             panic!(
@@ -281,16 +256,13 @@ fn min_presses_jolts(machine: &Machine) -> i64 {
         button_vars.push(v);
     }
 
-    // objective: minimize total presses
     let mut objective: Expression = 0.0.into();
     for &v in &button_vars {
         objective = objective + v;
     }
 
-    // 👇 use the microlp solver function
     let mut model = vars.minimise(objective).using(microlp);
 
-    // constraints per counter
     for (i, &t) in machine.target.iter().enumerate() {
         let mut expr: Expression = 0.0.into();
         for (j, button) in machine.buttons.iter().enumerate() {
