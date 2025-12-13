@@ -47,6 +47,10 @@ path = "Day_10/main.rs"
 name = "day11"
 path = "Day_11/main.rs"
 
+[[bin]]
+name = "day12"
+path = "Day_12/main.rs"
+
 [dependencies]
 good_lp = { version = "1.14.2", default-features = false, features = ["microlp"] }
 
